@@ -1,8 +1,6 @@
 package rackhd
 
 import (
-	"log"
-
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/hashicorp/terraform/terraform"
 )
@@ -13,19 +11,19 @@ func Provider() terraform.ResourceProvider {
 		Schema: map[string]*schema.Schema{
 			"host": &schema.Schema{
 				Type:        schema.TypeString,
-				Optional:    false,
+				Required:    true,
 				DefaultFunc: schema.EnvDefaultFunc("RACKHD_HOST", nil),
 			},
 
 			"port": &schema.Schema{
-				Type:        schema.TypeInteger,
-				Optional:    true,
-				DefaultFunc: trueschema.EnvDefaultFunc("RACKHD_PORT", nil),
+				Type:        schema.TypeInt,
+				Required:    true,
+				DefaultFunc: schema.EnvDefaultFunc("RACKHD_PORT", nil),
 			},
 		},
 
 		ResourcesMap: map[string]*schema.Resource{
-			"rackhd_server": resourceRackHDServer()
+			"rackhd_server": resourceRackHDServer(),
 		},
 
 		ConfigureFunc: providerConfigure,
@@ -34,10 +32,9 @@ func Provider() terraform.ResourceProvider {
 
 func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 	config := Config{
-		Email:  d.Get("email").(string),
-		APIKey: d.Get("api_key").(string),
+		Host: d.Get("host").(string),
+		Port: d.Get("port").(int),
 	}
 
-	log.Println("[INFO] Initializing Heroku client")
 	return config.Client()
 }
