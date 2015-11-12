@@ -1,6 +1,10 @@
 package main
 
-import "github.com/hashicorp/terraform/helper/schema"
+import (
+	"log"
+
+	"github.com/hashicorp/terraform/helper/schema"
+)
 
 func resourceRackHDServer() *schema.Resource {
 	return &schema.Resource{
@@ -19,10 +23,9 @@ func resourceRackHDServer() *schema.Resource {
 }
 
 func resourceRackHDServerCreate(d *schema.ResourceData, meta interface{}) error {
-	// addonLock.Lock()
-	// defer addonLock.Unlock()
-	//
-	// client := meta.(*heroku.Service)
+	log.Println("RackHD Create Resource")
+
+	// client := meta.(*rackhd.Client)
 	//
 	// app := d.Get("app").(string)
 	// opts := heroku.AddonCreateOpts{Plan: d.Get("plan").(string)}
@@ -51,6 +54,7 @@ func resourceRackHDServerCreate(d *schema.ResourceData, meta interface{}) error 
 }
 
 func resourceRackHDServerRead(d *schema.ResourceData, meta interface{}) error {
+	log.Println("RackHD Read Resource")
 	// client := meta.(*heroku.Service)
 	//
 	// addon, err := resourceRackHDServerRetrieve(
@@ -83,6 +87,7 @@ func resourceRackHDServerRead(d *schema.ResourceData, meta interface{}) error {
 }
 
 func resourceRackHDServerUpdate(d *schema.ResourceData, meta interface{}) error {
+	log.Println("RackHD Update Resource")
 	// client := meta.(*heroku.Service)
 	//
 	// app := d.Get("app").(string)
@@ -102,6 +107,7 @@ func resourceRackHDServerUpdate(d *schema.ResourceData, meta interface{}) error 
 }
 
 func resourceRackHDServerDelete(d *schema.ResourceData, meta interface{}) error {
+	log.Println("RackHD Delete Resource")
 	// client := meta.(*heroku.Service)
 	//
 	// log.Printf("[INFO] Deleting Addon: %s", d.Id())
