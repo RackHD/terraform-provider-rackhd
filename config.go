@@ -1,6 +1,6 @@
-package rackhd
+package main
 
-import rhd "github.com/jfrey/go-rackhd"
+import "github.com/jfrey/go-rackhd"
 
 // Config contains the RackHD API configuration parameters
 // required to connect the RackHD Go client to the API.
@@ -11,8 +11,8 @@ type Config struct {
 
 // Client creates a RackHD API client which is
 // utilized by the terraform.Provider.
-func (c *Config) Client() (*rhd.Client, error) {
-	client := rhd.Client{c.Host, c.Port}
+func (c *Config) Client() (*rackhd.Client, error) {
+	client := rackhd.Client{c.Host, c.Port}
 
 	return &client, nil
 }

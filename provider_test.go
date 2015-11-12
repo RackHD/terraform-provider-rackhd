@@ -1,4 +1,4 @@
-package rackhd
+package main
 
 import (
 	"testing"
