@@ -1,4 +1,4 @@
-package rackhd
+package main
 
 import "github.com/hashicorp/terraform/helper/schema"
 
@@ -10,37 +10,9 @@ func resourceRackHDServer() *schema.Resource {
 		Delete: resourceRackHDServerDelete,
 
 		Schema: map[string]*schema.Schema{
-			"app": &schema.Schema{
+			"os": &schema.Schema{
 				Type:     schema.TypeString,
 				Required: true,
-				ForceNew: true,
-			},
-
-			"plan": &schema.Schema{
-				Type:     schema.TypeString,
-				Required: true,
-			},
-
-			"config": &schema.Schema{
-				Type:     schema.TypeList,
-				Optional: true,
-				ForceNew: true,
-				Elem: &schema.Schema{
-					Type: schema.TypeMap,
-				},
-			},
-
-			"provider_id": &schema.Schema{
-				Type:     schema.TypeString,
-				Computed: true,
-			},
-
-			"config_vars": &schema.Schema{
-				Type:     schema.TypeList,
-				Computed: true,
-				Elem: &schema.Schema{
-					Type: schema.TypeString,
-				},
 			},
 		},
 	}
