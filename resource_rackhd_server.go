@@ -4,6 +4,7 @@ import (
 	"log"
 
 	"github.com/hashicorp/terraform/helper/schema"
+	"github.com/jfrey/go-rackhd"
 )
 
 func resourceRackHDServer() *schema.Resource {
@@ -18,14 +19,67 @@ func resourceRackHDServer() *schema.Resource {
 				Type:     schema.TypeString,
 				Required: true,
 			},
+			"sku": &schema.Schema{
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"type": &schema.Schema{
+				Type:     schema.TypeString,
+				Computed: true,
+			},
 		},
 	}
 }
 
+/*
+{
+	AutoDiscover:false
+	Catalogs:[]
+	CreatedAt:2015-11-11T18:24:13.166Z
+	ID:564387cd64fd10000546194d
+	Identifiers:[52:54:be:ef:87:03]
+	Name:52:54:be:ef:87:03
+	ObmSettings:[]
+	Relations:[]
+	Sku:
+	Type:compute
+	UpdatedAt:2015-11-11T18:36:08.635Z
+	Workflows:[]
+}
+*/
+
 func resourceRackHDServerCreate(d *schema.ResourceData, meta interface{}) error {
 	log.Println("RackHD Create Resource")
 
-	// client := meta.(*rackhd.Client)
+	client := meta.(*rackhd.Client)
+
+	nodes, err := client.GetNodes()
+	if err != nil {
+		log.Printf("Error getting Nodes: %s\n", err)
+		return err
+	}
+
+	var selected *rackhd.Node
+
+	for _, node := range nodes {
+		if node.Type == "compute" {
+			selected = &node
+			break
+		}
+	}
+
+	if selected == nil {
+		log.Println("Unable to find eligible compute Node.")
+	}
+
+	log.Printf("Selected Node: %+v\n", selected)
+	log.Printf("%s", selected.ID)
+
+	d.Set("sku", selected.Sku)
+	d.Set("type", selected.Type)
+
+	d.SetId(selected.ID)
+
 	//
 	// app := d.Get("app").(string)
 	// opts := heroku.AddonCreateOpts{Plan: d.Get("plan").(string)}
@@ -55,6 +109,20 @@ func resourceRackHDServerCreate(d *schema.ResourceData, meta interface{}) error 
 
 func resourceRackHDServerRead(d *schema.ResourceData, meta interface{}) error {
 	log.Println("RackHD Read Resource")
+
+	client := meta.(*rackhd.Client)
+
+	node, err := client.GetNode(d.Id())
+	if err != nil {
+		log.Printf("Error getting Node: %s\n", err)
+		return err
+	}
+
+	log.Printf("Read Node: %+v\n", node)
+
+	d.Set("sku", node.Sku)
+	d.Set("type", node.Type)
+
 	// client := meta.(*heroku.Service)
 	//
 	// addon, err := resourceRackHDServerRetrieve(
@@ -88,35 +156,22 @@ func resourceRackHDServerRead(d *schema.ResourceData, meta interface{}) error {
 
 func resourceRackHDServerUpdate(d *schema.ResourceData, meta interface{}) error {
 	log.Println("RackHD Update Resource")
-	// client := meta.(*heroku.Service)
-	//
-	// app := d.Get("app").(string)
-	//
-	// if d.HasChange("plan") {
-	// 	ad, err := client.AddonUpdate(
-	// 		app, d.Id(), heroku.AddonUpdateOpts{Plan: d.Get("plan").(string)})
-	// 	if err != nil {
-	// 		return err
-	// 	}
-	//
-	// 	// Store the new ID
-	// 	d.SetId(ad.ID)
-	// }
 
 	return resourceRackHDServerRead(d, meta)
 }
 
 func resourceRackHDServerDelete(d *schema.ResourceData, meta interface{}) error {
 	log.Println("RackHD Delete Resource")
-	// client := meta.(*heroku.Service)
-	//
-	// log.Printf("[INFO] Deleting Addon: %s", d.Id())
-	//
-	// // Destroy the app
-	// err := client.AddonDelete(d.Get("app").(string), d.Id())
-	// if err != nil {
-	// 	return fmt.Errorf("Error deleting addon: %s", err)
-	// }
+
+	client := meta.(*rackhd.Client)
+
+	node, err := client.GetNode(d.Id())
+	if err != nil {
+		log.Printf("Error getting Node: %s\n", err)
+		return err
+	}
+
+	log.Printf("Read Node: %+v\n", node)
 
 	d.SetId("")
 	return nil
