@@ -20,7 +20,7 @@ func Provider() terraform.ResourceProvider {
 			"port": &schema.Schema{
 				Type:        schema.TypeString,
 				Required:    true,
-				DefaultFunc: schema.EnvDefaultFunc("RACKHD_PORT", nil),
+				DefaultFunc: schema.EnvDefaultFunc("RACKHD_PORT", "8080"),
 			},
 		},
 
