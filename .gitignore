@@ -24,4 +24,4 @@ _testmain.go
 *.prof
 
 terraform-provider-rackhd
-terraform.tfstate
+terraform.tfstate*
