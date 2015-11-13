@@ -22,6 +22,11 @@ func Provider() terraform.ResourceProvider {
 				Required:    true,
 				DefaultFunc: schema.EnvDefaultFunc("RACKHD_PORT", "8080"),
 			},
+			"workflow_timeout": &schema.Schema{
+				Type:        schema.TypeString,
+				Required:    true,
+				DefaultFunc: schema.EnvDefaultFunc("RACKHD_WORKFLOW_TIMEOUT", "7200"),
+			},
 		},
 
 		ResourcesMap: map[string]*schema.Resource{
