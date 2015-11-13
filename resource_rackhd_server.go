@@ -85,8 +85,17 @@ func updateResourceRackHDServerFromNode(d *schema.ResourceData, meta interface{}
 	client := meta.(*rackhd.Client)
 
 	// Set computed properties from the Node document.
-	d.Set("sku", node.Sku)
 	d.Set("type", node.Type)
+
+	// Get the friendly entry for the Sku if possible.
+	if node.Sku != "" {
+		sku, err := client.GetSku(node.Sku)
+		if err == nil {
+			d.Set("sku", sku.Name)
+		} else {
+			d.Set("sku", node.Sku)
+		}
+	}
 
 	// Get the Lookup entries for the node for a computed IP Addresses property.
 	lookups, err := client.QueryLookups(node.ID)
