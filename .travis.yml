@@ -5,6 +5,6 @@ go:
 notifications:
   slack:
     secure: kMO4WVX2moUS9ziNYq/nN5dtlOjvsc3Ysgh57jL187Y6OWxvYDeKSOmde0FnW2tooVDpWnwLqc6OXkygO59ySrCH5sboBGWOt4DhcM3Y+gHJYNK1T9wQNdcfbRTMHYzk9HqjMjFip6LCdbaeUr2G9oUM7CFQb47usMImk3E58rCjzS/Z5YjT6CjE29xEpLsP9tIjBkGawo/aoYfWj/BWCOg2sMz7t3TYMgw/VGJzSp8c+MENzMwbXNfFRzJDWXAJT+EobLdnxLu6TQrKYsT3mj0bZI8brTQDnv9l2RQ2HFfkHDpRs2nmsZkR2pUZ+QMAGxfLXWtX9J+zgDV6nvtbA8BYJgDxSVZB+IEIf4KaC9H8K+Jcfj6Xhdz6ZgahHaNTZLTClbPRJCSo+N/Goekst6JdHY2+kh5YTbYASxI2Lt0mzghPM6Cctit1JtKHifxGCdkFBgohJMvBp1/2l1l9/0pFo0Evr+EVtvPlugpdAcEyDCI605VllOGa2Rsap81QsLO/N0g/joyBA3FcQArU+annU8F3TEdjZ8t7wqoB3ecQ2YJ1UdvcgQzaPwIcIZxhq2mZbNugRu2zGIASJxQoTDbAq4JgV7/Pz22JkTeufnrdIpKzFYn3JZ14TxI0NxKYUoiNuAjcBVuT3iFF55Xx+faCg6W3gf4jY9CYEJP4tVw=
-  on_success: [change]
-  on_failure: [always]
-  on_start: [never]
+  on_success: change
+  on_failure: always
+  on_start: never
