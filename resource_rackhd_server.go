@@ -15,7 +15,7 @@ func resourceRackHDServer() *schema.Resource {
 		Delete: resourceRackHDServerDelete,
 
 		Schema: map[string]*schema.Schema{
-			"os": &schema.Schema{
+			"workflow": &schema.Schema{
 				Type:     schema.TypeString,
 				Required: true,
 			},
