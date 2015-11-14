@@ -2,6 +2,7 @@ package main
 
 import (
 	"errors"
+	"sync"
 
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/jfrey/go-rackhd"
@@ -75,6 +76,21 @@ func resourceRackHDServerUpdate(d *schema.ResourceData, meta interface{}) error 
 
 func resourceRackHDServerDelete(d *schema.ResourceData, meta interface{}) error {
 	// TODO: Run a clean out workflow on the target Node.
+	// Patch the node to identify it's been reserved
+	client := meta.(*rackhd.Client)
+
+	node, err := client.GetNode(d.Id())
+	if err != nil {
+		return err
+	}
+
+	// Patch the node to identify it's been un-reserved
+	node.Terraform = false
+
+	node, err = client.PatchNode(node.ID, node)
+	if err != nil {
+		return err
+	}
 
 	d.SetId("")
 
@@ -120,7 +136,12 @@ func updateResourceRackHDServerFromNode(d *schema.ResourceData, meta interface{}
 	return nil
 }
 
+var selectResourceRackHDServerLock sync.Mutex
+
 func selectResourceRackHDServer(d *schema.ResourceData, meta interface{}) (*rackhd.Node, error) {
+	selectResourceRackHDServerLock.Lock()
+	defer selectResourceRackHDServerLock.Unlock()
+
 	client := meta.(*rackhd.Client)
 
 	nodes, err := client.GetNodes()
@@ -129,19 +150,27 @@ func selectResourceRackHDServer(d *schema.ResourceData, meta interface{}) (*rack
 	}
 
 	// Node selection looks for compute nodes which are not reserved.
-	var selected *rackhd.Node
-	for _, node := range nodes {
+	var node *rackhd.Node
+	for _, current := range nodes {
 		// TODO: add another field type for reservation.
-		if node.Type == "compute" {
-			selected = &node
+		if current.Type == "compute" && !current.Terraform {
+			node = &current
 			break
 		}
 	}
 
 	// If we couldn't find a Node we can't fulfill the resource request.
-	if selected == nil {
+	if node == nil {
 		return nil, errors.New("Unable to find eligible compute Node.")
 	}
 
-	return selected, nil
+	// Patch the node to identify it's been reserved
+	node.Terraform = true
+
+	node, err = client.PatchNode(node.ID, node)
+	if err != nil {
+		return nil, err
+	}
+
+	return node, nil
 }
