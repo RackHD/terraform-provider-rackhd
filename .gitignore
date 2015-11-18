@@ -26,3 +26,5 @@ _testmain.go
 
 terraform-provider-rackhd
 terraform.tfstate*
+*.tf
+*.tf.json
