@@ -2,6 +2,7 @@ package main
 
 import (
 	"strconv"
+	"time"
 
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/hashicorp/terraform/terraform"
@@ -46,9 +47,15 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 		return nil, err
 	}
 
+	timeout, err := strconv.Atoi(d.Get("workflow_timeout").(string))
+	if err != nil {
+		return nil, err
+	}
+
 	config := Config{
-		Host: d.Get("host").(string),
-		Port: port,
+		Host:            d.Get("host").(string),
+		Port:            port,
+		WorkflowTimeout: time.Second * time.Duration(timeout),
 	}
 
 	return config.Client()
