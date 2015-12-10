@@ -10,6 +10,19 @@ import (
 
 var resourceCheckoutLock sync.Mutex
 
+func resourceIdentify(d *schema.ResourceData, meta interface{}) (string, error) {
+	if v, ok := d.GetOk("node"); ok {
+		return v.(string), nil
+	}
+
+	node, err := resourceCheckout(d, meta)
+	if err != nil {
+		return "", err
+	}
+
+	return node.ID, nil
+}
+
 func resourceCheckout(d *schema.ResourceData, meta interface{}) (*rackhd.Node, error) {
 	resourceCheckoutLock.Lock()
 	defer resourceCheckoutLock.Unlock()

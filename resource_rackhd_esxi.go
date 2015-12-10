@@ -97,24 +97,13 @@ func resourceRackHDEsxi() *schema.Resource {
 }
 
 func resourceRackHDEsxiCreate(d *schema.ResourceData, meta interface{}) error {
-	var resourceID string
-
-	// If node is set we'll try to use that as the resource ID, otherwise we'll
-	// reserve a resource using resourceCheckout.
-	if v, ok := d.GetOk("node"); ok {
-		resourceID = v.(string)
-	} else {
-		node, err := resourceCheckout(d, meta)
-		if err != nil {
-			return err
-		}
-
-		resourceID = node.ID
+	resourceID, err := resourceIdentify(d, meta)
+	if err != nil {
+		return err
 	}
 
 	client := meta.(*rackhd.Client)
 
-	// TODO: Run esxi workflow
 	user := rackhd.User{
 		d.Get("esxi_user").(string),
 		d.Get("esxi_password").(string),
@@ -157,7 +146,7 @@ func resourceRackHDEsxiCreate(d *schema.ResourceData, meta interface{}) error {
 		Options: defaults,
 	}
 
-	err := client.NodeRunWorkflow(client.NodePostWorkflow, client.GetWorkflowByID, resourceID, body)
+	err = client.NodeRunWorkflow(client.NodePostWorkflow, client.GetWorkflowByID, resourceID, body)
 	if err != nil {
 		return err
 	}
