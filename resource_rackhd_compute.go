@@ -5,6 +5,7 @@ import (
 
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/jfrey/go-rackhd"
+	"github.com/jfrey/terraform-provider-rackhd/types"
 )
 
 func resourceRackHDCompute() *schema.Resource {
@@ -26,26 +27,6 @@ func resourceRackHDCompute() *schema.Resource {
 				Type:     schema.TypeString,
 				Required: true,
 			},
-			"interface": &schema.Schema{
-				Type:     schema.TypeString,
-				Required: true,
-			},
-			"ip": &schema.Schema{
-				Type:     schema.TypeString,
-				Required: true,
-			},
-			"gateway": &schema.Schema{
-				Type:     schema.TypeString,
-				Required: true,
-			},
-			"subnet": &schema.Schema{
-				Type:     schema.TypeString,
-				Required: true,
-			},
-			"dns_server": &schema.Schema{
-				Type:     schema.TypeString,
-				Required: true,
-			},
 			"domain": &schema.Schema{
 				Type:     schema.TypeString,
 				Required: true,
@@ -56,7 +37,7 @@ func resourceRackHDCompute() *schema.Resource {
 			},
 			"root_password": &schema.Schema{
 				Type:     schema.TypeString,
-				Required: true,
+				Optional: true,
 			},
 			"user": &schema.Schema{
 				Type:     schema.TypeString,
@@ -82,9 +63,12 @@ func resourceRackHDComputeCreate(d *schema.ResourceData, meta interface{}) error
 
 	client := meta.(*rackhd.Client)
 
-	body, err := composeWorkflowOptions(d)
+	workflow, err := composeWorkflow(d)
+	if err != nil {
+		return err
+	}
 
-	err = client.NodeRunWorkflow(client.NodePostWorkflow, client.GetWorkflowByID, resourceID, *body)
+	err = client.NodeRunWorkflow(client.NodePostWorkflow, client.GetWorkflowByID, resourceID, workflow)
 	if err != nil {
 		return err
 	}
@@ -106,11 +90,20 @@ func resourceRackHDComputeDelete(d *schema.ResourceData, meta interface{}) error
 	return resourceCheckin(d, meta)
 }
 
-func composeWorkflowOptions(d *schema.ResourceData) (*rackhd.WorkflowRequest, error) {
+func composeWorkflow(d *schema.ResourceData) (interface{}, error) {
 	if v, ok := d.GetOk("os"); ok {
+		// We're converting a known moniker for the compute OS into the RackHD
+		// data required to execute the proper workflow.  This should be cleaned
+		// up by unifying the install parameters across OS's in RackHD.
 		switch v.(string) {
 		case "centos-6.5":
-			return composeCentos65Options(d)
+			return composeCentosOptions(d, "6.5")
+		case "centos-7.0":
+			return composeCentosOptions(d, "7")
+		case "ubuntu-trusty":
+			return composeUbuntuOptions(d, "install-trusty.pxe")
+		case "ubuntu-utopic":
+			return composeUbuntuOptions(d, "install-utopic.pxe")
 		}
 
 		return nil, fmt.Errorf("Unsupported OS Requested: %s\n", v.(string))
@@ -119,48 +112,45 @@ func composeWorkflowOptions(d *schema.ResourceData) (*rackhd.WorkflowRequest, er
 	return nil, fmt.Errorf("Required paramter 'os' not specified.")
 }
 
-func composeCentos65Options(d *schema.ResourceData) (*rackhd.WorkflowRequest, error) {
-	user := rackhd.User{
-		d.Get("user").(string),
-		d.Get("password").(string),
-		d.Get("uid").(int),
-	}
-	users := rackhd.Users{user}
-	net := rackhd.NetworkDevice{
-		d.Get("interface").(string),
-		rackhd.Ipv4{
-			d.Get("gateway").(string),
-			d.Get("ip").(string),
-			d.Get("subnet").(string),
+func composeCentosOptions(d *schema.ResourceData, version string) (interface{}, error) {
+	workflow := types.CentosWorkflow{
+		Name: "Graph.InstallCentOS",
+		Options: types.CentosOptions{
+			InstallOS: types.InstallOS{
+				Domain:       d.Get("domain").(string),
+				Hostname:     d.Get("hostname").(string),
+				RootPassword: d.Get("root_password").(string),
+				Users: []types.User{
+					types.User{
+						Name:     d.Get("user").(string),
+						Password: d.Get("password").(string),
+						UID:      d.Get("uid").(int),
+					},
+				},
+				Version: version,
+			},
 		},
 	}
-	nets := rackhd.NetworkDevices{net}
-	dns := []string{
-		d.Get("dns_server").(string),
-	}
-	domain := d.Get("domain").(string)
-	hostname := d.Get("hostname").(string)
-	rootpass := d.Get("root_password").(string)
-	version := "6.5"
-	install := rackhd.InstallOsStruct{
-		dns,
-		domain,
-		hostname,
-		rootpass,
-		version,
-		nets,
-		users,
-		"",
-		"",
-		"",
-	}
-	defaults := rackhd.WorkflowOptionDefaults{
-		InstallOs: install,
-	}
-	body := rackhd.WorkflowRequest{
-		Name:    "Graph.InstallCentOS",
-		Options: defaults,
+
+	return workflow, nil
+}
+
+func composeUbuntuOptions(d *schema.ResourceData, profile string) (interface{}, error) {
+	workflow := types.UbuntuWorkflow{
+		Name: "Graph.InstallUbuntu",
+		Options: types.UbuntuOptions{
+			InstallUbuntu: types.InstallUbuntu{
+				Comport:       "ttyS0",
+				CompletionUri: "renasar-ansible.pub",
+				Domain:        d.Get("domain").(string),
+				Hostname:      d.Get("hostname").(string),
+				Password:      d.Get("password").(string),
+				Profile:       profile,
+				UID:           d.Get("uid").(int),
+				Username:      d.Get("user").(string),
+			},
+		},
 	}
 
-	return &body, nil
+	return workflow, nil
 }
