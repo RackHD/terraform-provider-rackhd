@@ -33,6 +33,7 @@ func Provider() terraform.ResourceProvider {
 		ResourcesMap: map[string]*schema.Resource{
 			"rackhd_compute": resourceRackHDCompute(),
 			"rackhd_esxi":    resourceRackHDEsxi(),
+			"rackhd_coreos":  resourceRackHDCoreos(),
 		},
 
 		ConfigureFunc: providerConfigure,
