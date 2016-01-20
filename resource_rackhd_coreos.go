@@ -3,7 +3,7 @@ package main
 import (
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/jfrey/go-rackhd"
-	"github.com/jfrey/terraform-provider-rackhd/types"
+	"github.com/skunkworxs/terraform-provider-rackhd/types"
 )
 
 func resourceRackHDCoreos() *schema.Resource {
