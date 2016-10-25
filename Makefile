@@ -16,7 +16,3 @@ build: deps
 
 install: clean build
 	cp -f ./bin/terraform-provider-rackhd $(shell dirname `which terraform`)
-
-cross:
-	env GOOS=linux GOARCH=amd64 go build -o bin/terraform-provider-rackhd
-	scp bin/terraform-provider-rackhd onrack@10.240.16.168:~/terraform/terraform-provider-rackhd

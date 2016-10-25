@@ -1,9 +1,9 @@
 package main
 
 import (
+	"github.com/RackHD/terraform-provider-rackhd/types"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/jfrey/go-rackhd"
-	"github.com/skunkworxs/terraform-provider-rackhd/types"
 )
 
 func resourceRackHDCoreos() *schema.Resource {
